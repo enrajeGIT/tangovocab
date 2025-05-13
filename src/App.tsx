@@ -15,12 +15,29 @@ function App() {
   const [showTranscription, setShowTranscription] = useState(false);
   const [answered, setAnswered] = useState(false);
 
-  const lireMot = (mot: string) => {
+const lireMot = (mot: string) => {
+  const speak = () => {
     const utterance = new SpeechSynthesisUtterance(mot);
     utterance.lang = "ja-JP";
     utterance.rate = 0.9;
+
+    const voices = speechSynthesis.getVoices();
+    const japaneseVoice = voices.find(v => v.lang === "ja-JP");
+
+    if (japaneseVoice) {
+      utterance.voice = japaneseVoice;
+    }
+
     speechSynthesis.speak(utterance);
   };
+
+  // Les voix ne sont pas forcément prêtes au premier appel sur mobile
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.onvoiceschanged = () => speak();
+  } else {
+    speak();
+  }
+};
 
   const generateQuestion = () => {
     const mot = vocabulaire[Math.floor(Math.random() * vocabulaire.length)];
