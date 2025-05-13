@@ -138,6 +138,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   word: {
     fontSize: "3rem",
     marginBottom: "1rem",
+    color: "#333",
   },
   soundBtn: {
     marginBottom: "0.5rem",
@@ -181,6 +182,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: "1rem",
     fontSize: "1.2rem",
     fontWeight: "bold",
+    color: "#222",
   },
   nextBtn: {
     marginTop: "1rem",
