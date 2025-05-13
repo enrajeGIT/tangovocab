@@ -10,34 +10,9 @@ type Mot = {
 function App() {
   const [question, setQuestion] = useState<Mot | null>(null);
   const [options, setOptions] = useState<string[]>([]);
-  const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showTranscription, setShowTranscription] = useState(false);
   const [answered, setAnswered] = useState(false);
-
-const lireMot = (mot: string) => {
-  const speak = () => {
-    const utterance = new SpeechSynthesisUtterance(mot);
-    utterance.lang = "ja-JP";
-    utterance.rate = 0.9;
-
-    const voices = speechSynthesis.getVoices();
-    const japaneseVoice = voices.find(v => v.lang === "ja-JP");
-
-    if (japaneseVoice) {
-      utterance.voice = japaneseVoice;
-    }
-
-    speechSynthesis.speak(utterance);
-  };
-
-  // Les voix ne sont pas forcément prêtes au premier appel sur mobile
-  if (speechSynthesis.getVoices().length === 0) {
-    speechSynthesis.onvoiceschanged = () => speak();
-  } else {
-    speak();
-  }
-};
 
   const generateQuestion = () => {
     const mot = vocabulaire[Math.floor(Math.random() * vocabulaire.length)];
@@ -64,42 +39,64 @@ const lireMot = (mot: string) => {
 
     if (choix === question.traduction) {
       setFeedback("✅ Bonne réponse !");
-      setScore((prev) => prev + 1);
     } else {
-      setFeedback(`❌ Mauvaise réponse. C'était : ${question.traduction}`);
+      setFeedback(`❌ Mauvaise réponse.\nBonne réponse : ${question.traduction}`);
     }
 
     setAnswered(true);
   };
 
+  const lireMot = (mot: string) => {
+    const speak = () => {
+      const utterance = new SpeechSynthesisUtterance(mot);
+      utterance.lang = "ja-JP";
+      utterance.rate = 0.9;
+      const voices = speechSynthesis.getVoices();
+      const jaVoice = voices.find((v) => v.lang === "ja-JP");
+      if (jaVoice) utterance.voice = jaVoice;
+      speechSynthesis.speak(utterance);
+    };
+
+    if (speechSynthesis.getVoices().length === 0) {
+      speechSynthesis.onvoiceschanged = () => speak();
+    } else {
+      speak();
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Quiz Japonais 🇯🇵</h1>
-      <p style={styles.score}>Score : {score}</p>
 
       {question && (
         <div style={styles.quizCard}>
           <h2 style={styles.word}>{question.mot}</h2>
 
-          <button onClick={() => lireMot(question.mot)} style={styles.soundBtn}>
-            🔊 Écouter le mot
-          </button>
+          <div style={styles.controls}>
+            <button onClick={() => lireMot(question.mot)} style={styles.controlBtn}>
+              🔊
+            </button>
+            <button
+              onClick={() => setShowTranscription(!showTranscription)}
+              style={styles.controlBtn}
+            >
+              {showTranscription ? "Masquer" : "Transcription"}
+            </button>
+          </div>
 
-          <button
-            onClick={() => setShowTranscription(!showTranscription)}
-            style={styles.transcriptionBtn}
-          >
-            {showTranscription ? "Masquer transcription" : "Voir transcription"}
-          </button>
-
-          {showTranscription && (
-            <p style={styles.transcription}>{question.transcription}</p>
-          )}
+          {/* Zone de transcription avec transition douce */}
+          <div style={styles.transcriptionContainer}>
+            <p style={{ ...styles.transcription, opacity: showTranscription ? 1 : 0 }}>
+              {question.transcription}
+            </p>
+          </div>
 
           <div style={styles.options}>
             {options.map((option, idx) => (
               <button
                 key={idx}
+                onClick={() => handleAnswer(option)}
+                disabled={answered}
                 style={{
                   ...styles.optionBtn,
                   backgroundColor:
@@ -109,21 +106,28 @@ const lireMot = (mot: string) => {
                       ? "#f8d7da"
                       : "#fff",
                 }}
-                onClick={() => handleAnswer(option)}
-                disabled={answered}
               >
                 {option}
               </button>
             ))}
           </div>
 
-          {feedback && <div style={styles.feedback}>{feedback}</div>}
+          {/* Boîte de feedback fixe sur 2 lignes */}
+          <div style={styles.feedbackBox}>
+            <pre style={styles.feedback}>
+              {feedback || "\n"}{/* assure une hauteur de 2 lignes */}
+            </pre>
+          </div>
 
-          {answered && (
-            <button style={styles.nextBtn} onClick={generateQuestion}>
-              ➡️ Question suivante
-            </button>
-          )}
+          <div style={styles.nextArea}>
+            {answered ? (
+              <button style={styles.nextBtn} onClick={generateQuestion}>
+                ➡️ Question suivante
+              </button>
+            ) : (
+              <span style={{ visibility: "hidden" }}>Question suivante</span>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -142,44 +146,45 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "2.5rem",
     marginBottom: "1rem",
   },
-  score: {
-    fontSize: "1.2rem",
-    marginBottom: "1rem",
-  },
   quizCard: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#f9f9f9",
     padding: "2rem",
     borderRadius: "1rem",
     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+    minHeight: "600px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
   word: {
     fontSize: "3rem",
     marginBottom: "1rem",
     color: "#333",
   },
-  soundBtn: {
+  controls: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "1rem",
     marginBottom: "0.5rem",
+  },
+  controlBtn: {
     padding: "0.5rem 1rem",
     fontSize: "1rem",
+    backgroundColor: "#eee",
     border: "none",
-    backgroundColor: "#e0e0ff",
     borderRadius: "0.5rem",
     cursor: "pointer",
   },
-  transcriptionBtn: {
-    background: "#eee",
-    border: "none",
-    padding: "0.5rem 1rem",
-    marginBottom: "0.5rem",
-    marginLeft: "0.5rem",
-    cursor: "pointer",
-    fontSize: "1rem",
-    borderRadius: "0.5rem",
+  transcriptionContainer: {
+    height: "2rem",
+    marginBottom: "1rem",
+    transition: "opacity 0.3s ease-in-out",
   },
   transcription: {
     fontSize: "1.2rem",
-    marginBottom: "1rem",
     color: "#555",
+    margin: 0,
+    transition: "opacity 0.3s ease-in-out",
   },
   options: {
     display: "flex",
@@ -194,15 +199,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "1px solid #ccc",
     cursor: "pointer",
     backgroundColor: "#fff",
+    minHeight: "3.5rem",
+  },
+  feedbackBox: {
+    height: "2.5rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   feedback: {
-    marginTop: "1rem",
-    fontSize: "1.2rem",
-    fontWeight: "bold",
+    fontSize: "1rem",
+    whiteSpace: "pre-line",
     color: "#222",
+    fontWeight: "bold",
+    margin: 0,
+  },
+  nextArea: {
+    marginTop: "1rem",
+    minHeight: "3rem",
   },
   nextBtn: {
-    marginTop: "1rem",
     padding: "0.75rem 1.5rem",
     fontSize: "1rem",
     backgroundColor: "#007bff",
