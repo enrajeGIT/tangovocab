@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { vocabulaire } from "./vocabulaire";
-
+//ceci est la branche de test
 type Mot = {
   mot: string;
   transcription: string;
