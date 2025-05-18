@@ -228,5 +228,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
   },
 };
-
+<p style={{ fontSize: "0.8rem", color: "#888" }}>
+  🔥 Environnement : {import.meta.env.VITE_FIREBASE_PROJECT_ID}
+</p>
 export default App;
