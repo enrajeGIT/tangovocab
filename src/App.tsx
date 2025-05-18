@@ -68,7 +68,9 @@ function App() {
     
     <div style={styles.container}>
       <h1 style={styles.title}>Quiz Japonais 🇯🇵</h1>
-
+    <p style={{ fontSize: "0.8rem", color: "#888" }}>
+      🔥 Environnement Firebase : {import.meta.env.VITE_FIREBASE_PROJECT_ID}
+    </p>
       {question && (
         <div style={styles.quizCard}>
           <h2 style={styles.word}>{question.mot}</h2>
