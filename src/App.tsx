@@ -65,9 +65,7 @@ function App() {
   };
 
   return (
-    <p style={{ fontSize: "0.8rem", color: "#888" }}>
-  🔥 Environnement : {import.meta.env.VITE_FIREBASE_PROJECT_ID}
-</p>
+    
     <div style={styles.container}>
       <h1 style={styles.title}>Quiz Japonais 🇯🇵</h1>
 
